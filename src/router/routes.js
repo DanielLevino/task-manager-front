@@ -46,6 +46,13 @@ const routes = [
       },
       {
         path: 'tasks/:id',
+        name: 'tasks.show',
+        component: () => import('pages/tasks/TaskShowPage.vue'),
+        props: true,
+        meta: { title: 'Detalhe da Tarefa' }
+      },
+      {
+        path: 'tasks/:id',
         name: 'tasks.edit',
         component: () => import('pages/tasks/TaskEditPage.vue'),
         props: true,
