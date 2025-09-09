@@ -75,6 +75,12 @@ const routes = [
         name: 'settings',
         component: () => import('pages/settings/SettingsPage.vue'),
         meta: { title: 'Configurações' }
+      },
+      {
+        path: 'team',
+        name: 'team',
+        component: () => import('pages/teams/TeamPage.vue'),
+        meta: { title: 'Equipes' }
       }
     ]
   },

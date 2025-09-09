@@ -63,7 +63,6 @@ const password = ref('')
 const confirmPassword = ref('')
 
 async function onSubmit () {
-  console.log("onSubmit")
   if (password.value !== confirmPassword.value) return
   try {
     await auth.register({ name: name.value, email: email.value, password: password.value })

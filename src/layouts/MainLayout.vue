@@ -57,14 +57,14 @@
           <q-item-section>Dashboard</q-item-section>
         </q-item>
 
+        <q-item clickable v-ripple :active="isActive('team')" @click="to('team')">
+          <q-item-section avatar><q-icon name="diversity_2" /></q-item-section>
+          <q-item-section>Equipes</q-item-section>
+        </q-item>
+
         <q-item clickable v-ripple :active="isActive('tasks.create')" @click="to('tasks.create')">
           <q-item-section avatar><q-icon name="add_task" /></q-item-section>
           <q-item-section>Nova Tarefa</q-item-section>
-        </q-item>
-
-        <q-item clickable v-ripple :active="isActive('tasks')" @click="to('tasks')">
-          <q-item-section avatar><q-icon name="checklist" /></q-item-section>
-          <q-item-section>Tarefas</q-item-section>
         </q-item>
 
         <!-- Adicione outros itens de navegação aqui -->
