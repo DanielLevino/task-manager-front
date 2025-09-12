@@ -1,6 +1,6 @@
-// estado inicial da autenticação (Sanctum)
-export default function () {
-  return {
-    teams: []
-  }
-}
+export default () => ({
+  items: [],
+  loading: false,
+  error: null,
+  current: null
+})

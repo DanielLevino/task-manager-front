@@ -81,6 +81,12 @@ const routes = [
         name: 'team',
         component: () => import('pages/teams/TeamPage.vue'),
         meta: { title: 'Equipes' }
+      },
+      {
+        path: 'teams/:id',
+        name: 'team.show',
+        component: () => import('pages/teams/TeamShowPage.vue'),
+        meta: { requiresAuth: true, title: 'Detalhes da equipe' }
       }
     ]
   },
