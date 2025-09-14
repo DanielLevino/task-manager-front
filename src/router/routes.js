@@ -33,26 +33,20 @@ const routes = [
         meta: { title: 'Dashboard (Kanban)' }
       },
       {
-        path: 'tasks',
-        name: 'tasks.list',
-        component: () => import('pages/tasks/TasksListPage.vue'),
-        meta: { title: 'Tarefas' }
-      },
-      {
         path: 'tasks/create',
         name: 'tasks.create',
         component: () => import('pages/tasks/TaskCreatePage.vue'),
         meta: { title: 'Nova Tarefa' }
       },
       {
-        path: 'tasks/:id',
+        path: 'tasks/show/:id',
         name: 'tasks.show',
         component: () => import('pages/tasks/TaskShowPage.vue'),
         props: true,
         meta: { title: 'Detalhe da Tarefa' }
       },
       {
-        path: 'tasks/:id',
+        path: 'tasks/edit/:id',
         name: 'tasks.edit',
         component: () => import('pages/tasks/TaskEditPage.vue'),
         props: true,

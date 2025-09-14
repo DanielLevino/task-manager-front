@@ -1,12 +1,12 @@
 <template>
   <q-page v-if="!loadingOne" padding class="bg-grey-1">
-    <!-- Barra de topo (mostrar nome da equipe se já sabemos) -->
+    <!-- Top bar -->
     <div class="row items-center q-gutter-sm q-mb-md" v-if="team">
       <q-btn flat round icon="arrow_back" @click="$router.back()" />
-      <div class="text-h6">{{ team?.name || 'Equipe' }}</div>
+      <div class="text-h6">{{ team?.name || $t('teams.single') }}</div>
       <q-space />
       <q-btn
-        label="Atualizar"
+        :label="$t('common.refresh')"
         icon="refresh"
         :loading="loadingOne"
         @click="loadOne"
@@ -18,13 +18,18 @@
     <template v-if="status === 'approved'">
       <q-card flat bordered class="q-mt-md">
         <q-card-section>
-          <div class="text-h6"><b>Função:</b> {{ team?.my_role || '' }}</div>
+          <div class="text-h6">
+            <b>{{ $t('teams.fields.role') }}:</b>
+            {{ $t('teams.roles.' + (team?.my_role || 'member')) }}
+          </div>
         </q-card-section>
       </q-card>
 
       <q-card flat bordered class="q-mt-md">
         <q-card-section>
-          <div class="text-h6">Membros: {{ team?.memberships?.length || 0 }}</div>
+          <div class="text-h6">
+            {{ $t('teams.members') }}: {{ team?.memberships?.length || 0 }}
+          </div>
         </q-card-section>
 
         <q-card-section>
@@ -41,7 +46,10 @@
                 </q-card-section>
                 <q-separator />
                 <q-card-section>
-                  <q-badge color="primary" outline>Função: {{ member.role }}</q-badge>
+                  <q-badge color="primary" outline>
+                    {{ $t('teams.fields.role') }}:
+                    {{ $t('teams.roles.' + (member.role || 'member')) }}
+                  </q-badge>
                 </q-card-section>
               </q-card>
             </div>
@@ -55,15 +63,17 @@
       <div class="flex flex-center" style="min-height: 60vh">
         <q-card class="q-pa-lg q-ma-xl text-center" style="max-width: 420px; width: 100%;">
           <q-card-section>
-            <div class="text-h6">Deseja participar desta equipe?</div>
-            <div class="text-subtitle2 text-grey">Equipe: {{ team?.name }}</div>
+            <div class="text-h6">{{ $t('teams.join.ask') }}</div>
+            <div class="text-subtitle2 text-grey">
+              {{ $t('teams.join.teamLabel', { name: team?.name }) }}
+            </div>
           </q-card-section>
           <q-separator />
           <q-card-actions class="q-mt-md" align="center">
             <q-btn
               color="primary"
               :loading="requesting"
-              label="Solicitar participação"
+              :label="$t('teams.join.requestButton')"
               @click="joinRequest"
             />
           </q-card-actions>
@@ -78,17 +88,16 @@
           <template #avatar>
             <q-spinner color="warning" size="md" />
           </template>
-          Seu pedido para entrar na equipe <b>{{ team?.name }}</b> está
-          <b>aguardando aprovação</b>.
+          {{ $t('teams.join.pendingBanner', { name: team?.name }) }}
         </q-banner>
       </div>
 
       <div class="flex flex-center">
         <q-card class="q-pa-lg text-center" style="max-width: 420px; width: 100%;">
           <q-card-section>
-            <div class="text-subtitle1">Aguardando aprovação do administrador.</div>
+            <div class="text-subtitle1">{{ $t('teams.join.pendingTitle') }}</div>
             <div class="text-caption text-grey">
-              Você será adicionado à equipe assim que aprovarem.
+              {{ $t('teams.join.pendingHint') }}
             </div>
           </q-card-section>
         </q-card>
@@ -99,31 +108,31 @@
     <template v-else-if="status === 'rejected'">
       <div class="flex flex-center q-mt-xl">
         <q-banner class="bg-red-2" rounded inline-actions>
-          <template v-slot:avatar>
+          <template #avatar>
             <q-icon name="block" color="negative" />
           </template>
-          Seu pedido para a equipe <b>{{ team?.name }}</b> foi <b>rejeitado</b>.
+          {{ $t('teams.join.rejectedBanner', { name: team?.name }) }}
         </q-banner>
       </div>
 
       <div class="flex flex-center" style="min-height: 40vh">
         <q-card class="q-pa-lg text-center" style="max-width: 420px; width: 100%;">
           <q-card-section>
-            <div class="text-subtitle1">Não foi possível entrar na equipe.</div>
+            <div class="text-subtitle1">{{ $t('teams.join.rejectedTitle') }}</div>
             <div class="text-caption text-grey">
-              Fale com um administrador se você acredita que foi um engano.
+              {{ $t('teams.join.rejectedHint') }}
             </div>
           </q-card-section>
         </q-card>
       </div>
     </template>
-    
+
     <!-- Modal de gerenciamento de membro -->
     <q-dialog v-model="memberDialog.open" persistent>
-      <q-card style="min-width: 420px">
+      <q-card>
         <q-card-section>
           <div class="text-h6">
-            Selecione a função para “{{ memberDialog.member?.name }}”
+            {{ $t('teams.modals.selectRoleTitle', { name: memberDialog.member?.name }) }}
           </div>
           <div class="text-subtitle2 text-grey">
             {{ memberDialog.member?.email }}
@@ -136,26 +145,26 @@
           <q-select
             v-model="memberDialog.selection"
             :options="roleOptions"
-            label="Função"
+            :label="$t('teams.fields.role')"
             filled dense
             emit-value map-options
             :disable="memberDialog.member?.role === 'owner' || savingMember"
-            hint="Escolha a nova função ou rejeite o membro"
+            :hint="$t('teams.hints.chooseRole')"
           />
 
           <q-banner
             v-if="memberDialog.member?.role === 'owner'"
             rounded class="bg-grey-3 text-grey-9"
           >
-            O criador da equipe não pode ter a função alterada.
+            {{ $t('teams.modals.ownerLocked') }}
           </q-banner>
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Cancelar" :disable="savingMember" v-close-popup />
+          <q-btn flat :label="$t('common.cancel')" :disable="savingMember" v-close-popup />
           <q-btn
             color="primary"
-            :label="memberDialog.selection"
+            :label="selectionLabel"
             :loading="savingMember"
             :disable="memberDialog.member?.role === 'owner'"
             @click="handleSaveMemberRole"
@@ -174,6 +183,9 @@ import { useQuasar } from 'quasar'
 import { useRoute } from 'vue-router'
 import { useTeamStore } from 'src/stores/teams'
 import { useAuthStore } from 'src/stores/auth'
+import { useI18n } from 'vue-i18n'
+
+const { t: $t } = useI18n({ useScope: 'global' })
 
 const $q = useQuasar()
 const route = useRoute()
@@ -183,92 +195,86 @@ const userStore = useAuthStore()
 const teamId = route.params.id
 const loadingOne = ref(false)
 const requesting = ref(false)
+const savingMember = ref(false)
 
 const team = computed(() => teamsStore.current)
 const user = computed(() => userStore.user)
 
-// metodo computado para vizualização da página
+// status de visualização
 const status = computed(() => {
   const m = team.value?.member
   const raw = team.value?.approval
-
   if (m === true) return 'approved'
-
   const appr = typeof raw === 'string' ? raw.toLowerCase().trim() : raw
-
   if (appr === 'pending' || appr === 'pendding') return 'pending'
   if (appr === 'rejected') return 'rejected'
-
   return 'not_member'
 })
 
-const roleOptions = [
-  { label: 'member', value: 'member' },
-  { label: 'admin', value: 'admin' },
-  { label: 'rejected', value: 'rejected' }
-]
- 
+// opções de função (labels traduzidos, values estáveis pra API)
+const roleOptions = computed(() => ([
+  { label: $t('teams.roles.member'), value: 'member' },
+  { label: $t('teams.roles.admin'), value: 'admin' },
+  { label: $t('teams.roles.rejected'), value: 'rejected' }
+]))
+
 const memberDialog = ref({
   open: false,
   member: null,
   selection: null
 })
 
-//  ====================================== FUNÇÕES ===========================
-/**
- * Carrega dados uma equipe específica através do id na rota
- */
+const selectionLabel = computed(() => {
+  const opt = roleOptions.value.find(o => o.value === memberDialog.value.selection)
+  return opt ? opt.label : $t('common.save')
+})
+
+// ======================= FUNÇÕES =======================
+
+/** Carrega dados de uma equipe específica */
 async function loadOne () {
   try {
     loadingOne.value = true
     $q.loading.show()
     await teamsStore.fetchOne({ id: teamId })
   } catch (e) {
-    $q.notify({ type: 'negative', message: teamsStore.error || 'Falha ao carregar equipe' })
+    $q.notify({ type: 'negative', message: teamsStore.error || $t('teams.errors.loadOne') })
   } finally {
     loadingOne.value = false
     $q.loading.hide()
   }
 }
 
-/**
- * Envia solicitação do para participar da equipe
- */
+/** Envia solicitação de participação na equipe */
 async function joinRequest () {
   try {
     requesting.value = true
     $q.loading.show()
     await teamsStore.createMember({ teamId, memberId: user.value.id })
     await loadOne()
-    $q.notify({ type: 'positive', message: 'Solicitação enviada.' })
+    $q.notify({ type: 'positive', message: $t('teams.messages.requestSent') })
   } catch (e) {
-    $q.notify({ type: 'negative', message: teamsStore.error || 'Falha ao solicitar participação' })
+    $q.notify({ type: 'negative', message: teamsStore.error || $t('teams.errors.request') })
   } finally {
     requesting.value = false
     $q.loading.hide()
   }
 }
 
-/**
- * Abre modal para mudança dos dados do membro da equipe
- * @param member dados do membro da equipe que foi clicado
- */
+/** Abre o modal de gerenciamento do membro */
 function openMemberModal (member) {
-  console.log(team)
-  if(team.value.my_role === "admin" || team.value.my_role === "owner"){
+  if (team.value.my_role === 'admin' || team.value.my_role === 'owner') {
     memberDialog.value.member = member
     memberDialog.value.selection = (member?.status === 'rejected')
       ? 'rejected'
       : (member?.role ?? 'member')
     memberDialog.value.open = true
   } else {
-    $q.notify({ type: 'negative', message: 'Não é possível modificar membro. Contacte o criador da equipe.' })
+    $q.notify({ type: 'negative', message: $t('teams.errors.cannotModifyMember') })
   }
 }
 
-/**
- * Salva dados do membro da equipe
- */
+/** Salva alterações do membro */
 async function handleSaveMemberRole () {
   const m = memberDialog.value.member
   const sel = memberDialog.value.selection
@@ -277,7 +283,7 @@ async function handleSaveMemberRole () {
   try {
     savingMember.value = true
     $q.loading.show()
-    
+
     await teamsStore.updateMembershipRole({
       teamId,
       membershipId: m.id,
@@ -286,9 +292,9 @@ async function handleSaveMemberRole () {
 
     await loadOne()
     memberDialog.value.open = false
-    $q.notify({ type: 'positive', message: 'Alterações salvas com sucesso.' })
+    $q.notify({ type: 'positive', message: $t('teams.messages.saved') })
   } catch (e) {
-    $q.notify({ type: 'negative', message: teamsStore.error || 'Falha ao salvar alterações.' })
+    $q.notify({ type: 'negative', message: teamsStore.error || $t('teams.errors.save') })
   } finally {
     savingMember.value = false
     $q.loading.hide()

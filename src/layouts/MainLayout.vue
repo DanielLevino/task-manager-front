@@ -7,12 +7,12 @@
         <q-btn
           flat dense round
           icon="menu"
-          aria-label="Menu"
+          :aria-label="t('common.menu')"
           @click="leftDrawerOpen = !leftDrawerOpen"
         />
 
         <q-toolbar-title>
-          Task Manager
+          {{ t('app.title') }}
         </q-toolbar-title>
 
         <div class="row items-center q-gutter-sm">
@@ -25,25 +25,48 @@
             dense flat round icon="expand_more"
           >
             <q-menu anchor="bottom right" self="top right">
-              <q-list style="min-width: 180px">
+              <q-list style="min-width: 200px">
                 <q-item v-close-popup>
                   <q-item-section>
                     <div class="text-subtitle2">{{ auth.user?.name }}</div>
                     <div class="text-caption text-grey-7">{{ auth.user?.email }}</div>
                   </q-item-section>
                 </q-item>
+
                 <q-separator />
+
+                <!-- Perfil -->
                 <q-item clickable v-ripple @click="goProfile" v-close-popup>
                   <q-item-section avatar><q-icon name="person" /></q-item-section>
-                  <q-item-section>Perfil</q-item-section>
+                  <q-item-section>{{ t('user.profile') }}</q-item-section>
                 </q-item>
+
+                <!-- Alterar idioma -->
+                <q-item>
+                  <q-item-section avatar><q-icon name="language" /></q-item-section>
+                  <q-item-section>
+                    <q-select
+                      v-model="locale"
+                      :options="languageOptions"
+                      dense
+                      borderless
+                      emit-value
+                      map-options
+                    />
+                  </q-item-section>
+                </q-item>
+
+                <q-separator />
+
+                <!-- Logout -->
                 <q-item clickable v-ripple @click="doLogout" v-close-popup>
                   <q-item-section avatar><q-icon name="logout" /></q-item-section>
-                  <q-item-section>Sair</q-item-section>
+                  <q-item-section>{{ t('auth.signOut') }}</q-item-section>
                 </q-item>
               </q-list>
             </q-menu>
           </q-btn>
+
         </div>
 
       </q-toolbar>
@@ -54,20 +77,18 @@
       <q-list padding>
         <q-item clickable v-ripple :active="isActive('dashboard')" @click="to('dashboard')">
           <q-item-section avatar><q-icon name="dashboard" /></q-item-section>
-          <q-item-section>Dashboard</q-item-section>
+          <q-item-section>{{ t('nav.dashboard') }}</q-item-section>
         </q-item>
 
         <q-item clickable v-ripple :active="isActive('team')" @click="to('team')">
           <q-item-section avatar><q-icon name="diversity_2" /></q-item-section>
-          <q-item-section>Equipes</q-item-section>
+          <q-item-section>{{ t('teams.title') }}</q-item-section>
         </q-item>
 
         <q-item clickable v-ripple :active="isActive('tasks.create')" @click="to('tasks.create')">
           <q-item-section avatar><q-icon name="add_task" /></q-item-section>
-          <q-item-section>Nova Tarefa</q-item-section>
+          <q-item-section>{{ t('tasks.new') }}</q-item-section>
         </q-item>
-
-        <!-- Adicione outros itens de navegação aqui -->
       </q-list>
     </q-drawer>
 
@@ -79,10 +100,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from 'stores/auth'
+import { useI18n } from 'vue-i18n'
+import { setLocale } from 'src/boot/i18n'
 
+const { t, locale } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
@@ -110,15 +134,23 @@ async function doLogout () {
   try {
     await auth.logout()
     router.push({ name: 'login' })
-  } catch (e) {
-    // opcional: tratar erro
-  }
+  } catch (e) {}
 }
 
 function goProfile () {
-  // futura página de perfil
   // router.push({ name: 'profile' })
 }
+
+// opções de idiomas
+const languageOptions = [
+  { label: 'Português', value: 'pt-BR' },
+  { label: 'English', value: 'en-US' }
+]
+
+// persistir escolha
+watch(locale, (val) => {
+  setLocale(val)
+})
 
 onMounted(async () => {
   if (!auth.user) {

@@ -4,27 +4,27 @@
       <q-input
         v-model="email"
         type="email"
-        label="Email"
+        :label="t('auth.email')"
         outlined
-        :rules="[val => !!val || 'Informe seu email']"
+        :rules="[val => !!val || t('auth.errors.emailRequired')]"
       />
 
       <q-input
         v-model="password"
         type="password"
-        label="Senha"
+        :label="t('auth.password')"
         outlined
-        :rules="[val => !!val || 'Informe sua senha']"
+        :rules="[val => !!val || t('auth.errors.passwordRequired')]"
       />
 
       <div class="row items-center justify-between">
         <q-btn
-          label="Entrar"
+          :label="t('auth.signIn')"
           color="primary"
           type="submit"
         />
         <router-link :to="{ name: 'register' }" class="text-primary">
-          Criar conta
+          {{ t('auth.createAccount') }}
         </router-link>
       </div>
     </q-form>
@@ -35,7 +35,9 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from 'stores/auth'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const router = useRouter()
 const auth = useAuthStore()
 
@@ -47,8 +49,8 @@ async function onSubmit () {
     await auth.login({ email: email.value, password: password.value })
     router.push({ name: 'dashboard' })
   } catch (e) {
-    
+    // opcional: exibir erro traduzido
+    // this.$q.notify({ type: 'negative', message: t('auth.errors.generic') })
   }
 }
 </script>
-
