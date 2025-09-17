@@ -129,7 +129,7 @@
 
     <!-- Modal de gerenciamento de membro -->
     <q-dialog v-model="memberDialog.open" persistent>
-      <q-card>
+      <q-card class="size-md">
         <q-card-section>
           <div class="text-h6">
             {{ $t('teams.modals.selectRoleTitle', { name: memberDialog.member?.name }) }}
@@ -143,6 +143,7 @@
 
         <q-card-section class="q-gutter-md">
           <q-select
+            v-show="memberDialog.member?.role !== 'owner'"
             v-model="memberDialog.selection"
             :options="roleOptions"
             :label="$t('teams.fields.role')"
@@ -215,7 +216,8 @@ const status = computed(() => {
 const roleOptions = computed(() => ([
   { label: $t('teams.roles.member'), value: 'member' },
   { label: $t('teams.roles.admin'), value: 'admin' },
-  { label: $t('teams.roles.rejected'), value: 'rejected' }
+  { label: $t('teams.roles.rejected'), value: 'rejected'},
+  { label: $t('teams.roles.pending'), value: 'pending' },
 ]))
 
 const memberDialog = ref({
@@ -287,6 +289,7 @@ async function handleSaveMemberRole () {
     await teamsStore.updateMembershipRole({
       teamId,
       membershipId: m.id,
+      teamMembershipId: m.teamMembershipId,
       role: sel
     })
 
@@ -303,3 +306,8 @@ async function handleSaveMemberRole () {
 
 onMounted(loadOne)
 </script>
+<style scoped>
+.size-md {
+  width: 80vw;
+}
+</style>

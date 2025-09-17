@@ -11,9 +11,10 @@ export default {
     cancel: 'Cancelar',
     save: 'Salvar',
     saveChanges: 'Salvar alterações',
-    required: 'Obrigatório'
+    required: 'Obrigatório',
+    back: 'voltar',
+    edit: 'Editar'
   },
-
 
   nav: {
     dashboard: 'Dashboard'
@@ -59,6 +60,7 @@ export default {
     list: 'Minhas Tarefas',
     due: 'Entrega: {date}',
     noDue: 'Sem prazo',
+    single: 'Tarefa',
     emptyColumn: 'Sem tarefas',
     status: {
       todo: 'A fazer',
@@ -66,6 +68,7 @@ export default {
       done: 'Concluídas'
     },
     fields: {
+      team: 'equipe',
       name: 'Nome',
       title: 'Título',
       description: 'Descrição',
@@ -74,7 +77,9 @@ export default {
       assignee: 'Responsável',
       status: 'Status',
       priority: 'Prioridade',
-      teamOptional: 'Equipe (opcional)'
+      teamOptional: 'Equipe (opcional)',
+      creator: 'Criador(a)',
+      createdAt: 'Criado em'
     },
     priority: {
       low: 'Baixa',
@@ -103,11 +108,29 @@ export default {
     messages: {
       created: 'Tarefa criada com sucesso!',
       updated: 'Tarefa atualizada com sucesso!',
-      deleted: 'Tarefa excluída.'
+      deleted: 'Tarefa excluída.',
+      deletedSuccess: 'Tarefa excluída com sucesso'
+    },
+    
+    placeholders: {
+      noDescription: 'Sem descrição'
+    },
+
+    dialogs: {
+      deleteConfirm: 'Deseja realmente excluir a tarefa “{title}” permanentemente?'
     },
 
     errors: {
-      save: 'Erro ao salvar tarefa'
+      save: 'Erro ao salvar tarefa',
+      holidayCheck: "Não foi possível verificar os feriados. Tente novamente mais tarde.",
+      dueDatePast: 'A data não pode ser anterior a hoje',
+      loadOne: 'Falha ao carregar tarefa',
+      delete: 'Erro ao excluir a tarefa'
+    },
+     warnings: {
+      holiday: "A data selecionada é um feriado",
+      holidayName: "Feriado: {name}",
+      holidayOn: "Esta data ({date}) é um feriado ({name})"
     }
   },
 
@@ -190,6 +213,6 @@ export default {
   // =====================
   user: {
     profile: 'Perfil',
-    anonymouus: 'Usuário'
+    anonymous: 'Usuário'
   }
 }

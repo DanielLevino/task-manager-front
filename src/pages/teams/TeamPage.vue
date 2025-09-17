@@ -58,7 +58,7 @@
     </q-pull-to-refresh>
 
     <q-dialog v-model="createOpen">
-      <q-card>
+      <q-card class="size-md">
         <q-card-section class="text-h6">{{ $t('teams.create') }}</q-card-section>
         <q-card-section>
           <q-input
@@ -146,3 +146,8 @@ function goToTeam(id) {
   router.push({ name: 'team.show', params: { id } })
 }
 </script>
+<style scoped>
+.size-md {
+  width: 80vw;
+}
+</style>

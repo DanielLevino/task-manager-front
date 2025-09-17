@@ -55,8 +55,13 @@ export default {
     }
   },
 
-  async updateMembershipRole() {
-
+  async updateMembershipRole(payload) {
+    const { teamId, membershipId, role, teamMembershipId } = payload
+    try {
+      await api.patch(`api/team-memberships/${teamMembershipId}`, payload)
+    } catch (error) {
+      console.log(error);
+    }
   }
 
 }

@@ -38,7 +38,6 @@
             emit-value
             :label="$t('tasks.fields.assignee')"
             filled
-            :hint="$t('tasks.hints.activeMembersOnly')"
           />
           <q-input
             v-else
@@ -51,6 +50,7 @@
         </div>
 
         <q-input
+          ref="titleRef"
           v-model="form.title"
           :label="$t('tasks.fields.title')"
           :rules="[(v) => !!v || $t('common.required')]"
@@ -81,7 +81,12 @@
           </div>
 
           <div class="col-12 col-md-4">
-            <q-input v-model="form.due_date" :label="$t('tasks.fields.dueDateShort')" filled readonly>
+            <q-input 
+              v-model="form.due_date" 
+              :label="$t('tasks.fields.dueDateShort')" 
+              filled readonly 
+              :rules="dueDateRules"
+            >
               <template #append>
                 <q-icon name="event" class="cursor-pointer">
                   <q-popup-proxy cover transition-show="scale" transition-hide="scale">
@@ -99,6 +104,7 @@
             color="primary"
             :label="isEdit ? $t('common.saveChanges') : $t('common.save')"
             :loading="saving"
+            :disable="saving"
           />
           <q-btn flat color="primary" :label="$t('common.cancel')" @click="onCancel" />
         </div>
@@ -108,8 +114,8 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
-import { useQuasar } from 'quasar'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { useQuasar, debounce } from 'quasar'
 import { api } from 'boot/axios'
 import { useAuthStore } from 'stores/auth'
 import { useI18n } from 'vue-i18n'
@@ -121,7 +127,11 @@ dayjs.extend(customParseFormat)
 const { t: $t, locale } = useI18n({ useScope: 'global' })
 
 const props = defineProps({
-  task: { type: Object, default: null }
+  task: { type: Object, default: null },
+  // Se true, ao criar limpa o form mas preserva o time selecionado (e o responsável padrão).
+  preserveTeamOnReset: { type: Boolean, default: true },
+  // Se true, limpa automaticamente após criar (não afeta edição).
+  autoResetOnCreate: { type: Boolean, default: true }
 })
 const emit = defineEmits(['saved', 'cancel'])
 
@@ -129,6 +139,7 @@ const $q = useQuasar()
 const auth = useAuthStore()
 
 const formRef = ref(null)
+
 const form = ref({
   title: '',
   description: '',
@@ -159,23 +170,22 @@ const isEdit = computed(() => !!props.task?.id)
 const isEN = computed(() => String(locale.value).toLowerCase().startsWith('en'))
 const dateMask = computed(() => (isEN.value ? 'MM/DD/YYYY' : 'DD/MM/YYYY'))
 
-// Converte string no formato de EXIBIÇÃO (MM/DD/YYYY ou DD/MM/YYYY) -> ISO (YYYY-MM-DD)
-function displayToISO(dateStr) {
+// Converte string de EXIBIÇÃO (MM/DD/YYYY | DD/MM/YYYY) -> ISO (YYYY-MM-DD)
+function displayToISO (dateStr) {
   if (!dateStr) return null
   const mask = dateMask.value
-  const d = dayjs(dateStr, mask, true) // true = parsing estrito
+  const d = dayjs(dateStr, mask, true) // parsing estrito
   return d.isValid() ? d.format('YYYY-MM-DD') : null
 }
 
-// Converte ISO (YYYY-MM-DD) -> string no formato de EXIBIÇÃO atual
-function isoToDisplay(isoStr) {
+// ISO (YYYY-MM-DD) -> EXIBIÇÃO
+function isoToDisplay (isoStr) {
   if (!isoStr) return null
   const d = dayjs(isoStr, 'YYYY-MM-DD', true)
   return d.isValid() ? d.format(dateMask.value) : null
 }
 
-
-function hydrateFromTask(task) {
+function hydrateFromTask (task) {
   if (!task) return
   form.value.title = task.title ?? ''
   form.value.description = task.description ?? ''
@@ -207,14 +217,42 @@ const canAssignOthers = computed(() => {
 const assigneeOptions = computed(() => {
   if (!selectedTeam.value?.memberships) return []
   return selectedTeam.value.memberships
-    .filter(m => (['owner','admin','member'].includes(m.role)))
+    .filter(m => (['owner', 'admin', 'member'].includes(m.role)))
     .map(m => ({
       id: m.user?.id || m.id,
       name: m.user?.name || m.name
     }))
 })
 
-async function onSubmit() {
+// reset amigável: limpa tudo e (opcionalmente) mantém o time selecionado
+function resetForm () {
+  const keepTeam = props.preserveTeamOnReset && selectedTeamId.value
+  const keptTeamId = keepTeam ? selectedTeamId.value : null
+
+  form.value = {
+    title: '',
+    description: '',
+    priority: 'medium',
+    due_date: null,
+    assignee_id: auth.user?.id ?? null,
+    team_id: keptTeamId
+  }
+  isDoing.value = false
+
+  if (!keepTeam) {
+    selectedTeam.value = null
+    selectedTeamId.value = null
+  } else {
+    // re-hidrata banner/roles do time preservado
+    onTeamChange(keptTeamId)
+  }
+
+  formRef.value?.resetValidation?.()
+
+}
+
+async function onSubmit () {
+  if (saving.value) return
   const valid = await formRef.value.validate()
   if (!valid) return
 
@@ -228,18 +266,27 @@ async function onSubmit() {
     team_id: form.value.team_id ?? null
   }
 
+  const idempotencyKey = (crypto?.randomUUID && crypto.randomUUID()) || `${Date.now()}-${Math.random()}`
+
   saving.value = true
   error.value = null
   try {
     let data
     if (isEdit.value) {
-      const res = await api.put(`/api/tasks/${props.task.id}`, payload)
+      const res = await api.put(`/api/tasks/${props.task.id}`, payload, {
+        headers: { 'X-Idempotency-Key': idempotencyKey }
+      })
       data = res.data
       $q.notify({ type: 'positive', message: $t('tasks.messages.updated') })
     } else {
-      const res = await api.post('/api/tasks', payload)
+      const res = await api.post('/api/tasks', payload, {
+        headers: { 'X-Idempotency-Key': idempotencyKey }
+      })
       data = res.data
       $q.notify({ type: 'positive', message: $t('tasks.messages.created') })
+      if (props.autoResetOnCreate) {
+        resetForm()
+      }
     }
     emit('saved', data)
   } catch (e) {
@@ -249,11 +296,40 @@ async function onSubmit() {
   }
 }
 
-function onCancel() {
+function onCancel () {
   emit('cancel')
 }
 
+const checkHoliday = debounce(async (newVal) => {
+  const iso = displayToISO(newVal)
+  if (iso) {
+    const { data: hint } = await api.get('/api/holidays/check', { params: { date: iso, uf: 'PE' } })
+    if (hint.is_holiday) {
+      $q.notify({ type: 'warning', message: `${$t('tasks.warnings.holiday')}: ${hint.name}` })
+    }
+  }
+}, 300)
+
+// Regras de validação para o vencimento (não permitir data anterior a hoje)
+const dueDateRules = [
+  (v) => {
+    // campo opcional: se vazio, passa
+    if (!v) return true
+
+    const iso = displayToISO(v)
+    if (!iso) return $t('tasks.errors.invalidDate') || 'Data inválida'
+
+    // compara por dia (sem horário)
+    const today = dayjs().startOf('day')
+    const selected = dayjs(iso, 'YYYY-MM-DD', true).startOf('day')
+
+    return !selected.isBefore(today) || 
+      $t('tasks.errors.dueDatePast')
+  }
+]
+
 watch(() => props.task, (t) => {
+  // estado baseline
   form.value = {
     title: '',
     description: '',
@@ -280,6 +356,7 @@ watch(locale, () => {
   }
 })
 
+watch(() => form.value.due_date, (v) => checkHoliday(v))
 
 onMounted(() => {
   if (!props.task && form.value.team_id) {

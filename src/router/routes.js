@@ -39,30 +39,11 @@ const routes = [
         meta: { title: 'Nova Tarefa' }
       },
       {
-        path: 'tasks/show/:id',
+        path: 'tasks/:id',
         name: 'tasks.show',
         component: () => import('pages/tasks/TaskShowPage.vue'),
         props: true,
         meta: { title: 'Detalhe da Tarefa' }
-      },
-      {
-        path: 'tasks/edit/:id',
-        name: 'tasks.edit',
-        component: () => import('pages/tasks/TaskEditPage.vue'),
-        props: true,
-        meta: { title: 'Editar Tarefa' }
-      },
-      {
-        path: 'notifications',
-        name: 'notifications',
-        component: () => import('pages/notifications/NotificationsPage.vue'),
-        meta: { title: 'Notificações' }
-      },
-      {
-        path: 'queues',
-        name: 'queues.dashboard',
-        component: () => import('pages/queues/QueueDashboardPage.vue'),
-        meta: { title: 'Filas (Jobs)' }
       },
       {
         path: 'settings',

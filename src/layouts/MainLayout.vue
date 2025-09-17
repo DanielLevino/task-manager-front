@@ -36,10 +36,10 @@
                 <q-separator />
 
                 <!-- Perfil -->
-                <q-item clickable v-ripple @click="goProfile" v-close-popup>
+                <!-- <q-item clickable v-ripple @click="goProfile" v-close-popup>
                   <q-item-section avatar><q-icon name="person" /></q-item-section>
                   <q-item-section>{{ t('user.profile') }}</q-item-section>
-                </q-item>
+                </q-item> -->
 
                 <!-- Alterar idioma -->
                 <q-item>

@@ -12,7 +12,9 @@ export default {
     cancel: 'Cancel',
     save: 'Save',
     saveChanges: 'Save changes',
-    required: 'Required'
+    required: 'Required',
+    back: 'Back',
+    edit: 'Edit'
   },
 
   nav: {
@@ -41,6 +43,13 @@ export default {
     }
   },
 
+  // Optional date formats (useful if you reference t('date.formats.short'))
+  date: {
+    formats: {
+      short: 'MM/DD/YYYY'
+    }
+  },
+
   // =====================
   // DASHBOARD
   // =====================
@@ -59,6 +68,7 @@ export default {
     list: 'My Tasks',
     due: 'Due: {date}',
     noDue: 'No due date',
+    single: 'Task',
     emptyColumn: 'No tasks',
     status: {
       todo: 'To do',
@@ -66,6 +76,7 @@ export default {
       done: 'Done'
     },
     fields: {
+      team: 'Team',
       name: 'Name',
       title: 'Title',
       description: 'Description',
@@ -74,35 +85,61 @@ export default {
       assignee: 'Assignee',
       status: 'Status',
       priority: 'Priority',
-      teamOptional: 'Team (optional)'
+      teamOptional: 'Team (optional)',
+      creator: 'Creator',
+      createdAt: 'Created at'
     },
     priority: {
       low: 'Low',
       medium: 'Medium',
       high: 'High'
     },
+
     form: {
       yourRole: 'Your role in this team',
       canAssignOthers: 'You can assign this task to another active member.',
       youWillBeAssignee: 'You will be assigned by default.',
       isDoing: 'Already in progress?'
     },
+
     hints: {
       activeMembersOnly: 'Active members only (approved)',
       notAdminWillBeAssignee: 'You are not an admin/creator; you will be assigned to the task'
     },
+
     actions: {
       save: 'Save',
       cancel: 'Cancel',
       delete: 'Delete'
     },
+
     messages: {
       created: 'Task created successfully!',
       updated: 'Task updated successfully!',
-      deleted: 'Task deleted.'
+      deleted: 'Task deleted.',
+      deletedSuccess: 'Task deleted successfully'
     },
+
+    placeholders: {
+      noDescription: 'No description'
+    },
+
+    dialogs: {
+      deleteConfirm: 'Do you really want to permanently delete the task “{title}”?'
+    },
+
     errors: {
-      save: 'Error saving task'
+      save: 'Error while saving task',
+      holidayCheck: 'Could not check holidays. Please try again later.',
+      dueDatePast: "Due date can't be before today",
+      loadOne: 'Failed to load task',
+      delete: 'Error deleting task'
+    },
+
+    warnings: {
+      holiday: 'The selected date is a holiday',
+      holidayName: 'Holiday: {name}',
+      holidayOn: 'This date ({date}) is a holiday ({name})'
     }
   },
 

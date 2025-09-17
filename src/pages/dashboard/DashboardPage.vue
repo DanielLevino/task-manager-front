@@ -263,7 +263,6 @@ async function persistTaskStatus (task, newStatus, newIndex) {
   }
 }
 
-/** (Opcional) Persiste apenas reordenação dentro da mesma coluna */
 async function persistTaskOrder (task, status, newIndex) {
   try {
     await api.patch(`/api/tasks/${task.id}`, { status, position: newIndex })
