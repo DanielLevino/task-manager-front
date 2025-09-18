@@ -120,6 +120,7 @@ import { api } from 'boot/axios'
 import { useAuthStore } from 'stores/auth'
 import { useI18n } from 'vue-i18n'
 import dayjs from 'dayjs'
+import { useRouter } from 'vue-router';
 import customParseFormat from 'dayjs/plugin/customParseFormat'
 
 dayjs.extend(customParseFormat)
@@ -137,6 +138,7 @@ const emit = defineEmits(['saved', 'cancel'])
 
 const $q = useQuasar()
 const auth = useAuthStore()
+const router = useRouter()
 
 const formRef = ref(null)
 
@@ -247,7 +249,7 @@ function resetForm () {
     onTeamChange(keptTeamId)
   }
 
-  formRef.value?.resetValidation?.()
+  formRef.value?.reset?.()
 
 }
 
@@ -289,6 +291,7 @@ async function onSubmit () {
       }
     }
     emit('saved', data)
+    router.push({name: 'dashboard'})
   } catch (e) {
     error.value = e.response?.data?.message || $t('tasks.errors.save')
   } finally {
